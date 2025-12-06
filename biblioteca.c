@@ -3,17 +3,25 @@
 Aluno biblioteca[max_alunos]; 
 int total_alunos = 0;          
 
+Turma cadastro_turmas[max_turmas];
+int total_turmas = 0;
+
+Livro catalogo_livros[max_livros];
+int total_livros = 0;
+
 void inicializarDados() {
     total_alunos = 0; 
+    total_turmas = 0;
+    total_livros = 0;
 }
 
-int buscarPosicao(int matricula_busca) {
+int buscarPosicaoAluno(int matricula_busca) {
     for (int i = 0; i < total_alunos; i++) {
         if (biblioteca[i].matricula == matricula_busca) {
             return i; 
         }
     }
-    return -1;
+    return -1; 
 }
 
 int buscarPorNome(const char *nome_busca) {
@@ -25,195 +33,207 @@ int buscarPorNome(const char *nome_busca) {
     return -1;
 }
 
-void apresentaAlunos() {
-    printf("\n--- Total de Alunos Cadastrados: (%d) ---\n", total_alunos);
+int buscarPosicaoTurma(const char *codigo_busca) {
+    for (int i = 0; i < total_turmas; i++) {
+        if (strcmp(cadastro_turmas[i].codigo, codigo_busca) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-    if (total_alunos == 0) {
-        printf("[AVISO] Nenhum Aluno Cadastrado.\n");
+int buscarPosicaoLivro(int id_busca) {
+    for (int i = 0; i < total_livros; i++) {
+        if (catalogo_livros[i].id == id_busca) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void inserirTurma() {
+    char novo_codigo[10];
+    
+    printf("\n--- CADASTRO DE NOVA TURMA ---\n");
+
+    if (total_turmas >= max_turmas) {
+        printf("[AVISO] O limite de turmas (%d) foi atingido. Processo cancelado.\n", max_turmas);
         return;
     }
 
-    printf("%-10s %-30s %-8s %-5s\n", "Matricula", "Nome", "Turma", "Livro");
+    printf("Digite o codigo da turma: ");
+    scanf("%s", novo_codigo);
+    while (getchar() != '\n');
+    
+    if (buscarPosicaoTurma(novo_codigo) != -1) {
+        printf("[AVISO] O codigo de turma '%s' ja existe. Processo cancelado.\n", novo_codigo);
+        return;
+    }
+    
+    int i = total_turmas;
+    while (i > 0 && strcmp(cadastro_turmas[i - 1].codigo, novo_codigo) > 0) {
+        cadastro_turmas[i] = cadastro_turmas[i - 1]; 
+        i--;
+    }
+
+    strcpy(cadastro_turmas[i].codigo, novo_codigo);
+    
+    printf("Digite o nome do curso: ");
+    fgets(cadastro_turmas[i].nome_curso, 40, stdin);
+    if (cadastro_turmas[i].nome_curso[strlen(cadastro_turmas[i].nome_curso) - 1] == '\n') {
+        cadastro_turmas[i].nome_curso[strlen(cadastro_turmas[i].nome_curso) - 1] = '\0';
+    }
+    
+    cadastro_turmas[i].limite_alunos = 40; 
+    
+    total_turmas++;
+    printf("\n[SUCESSO] Turma '%s' cadastrada (Limite: %d alunos).\n", novo_codigo, 40);
+}
+
+void apresentaTurmas() {
+    printf("\n--- TOTAL DE TURMAS CADASTRADAS (%d) ---\n", total_turmas);
+
+    if (total_turmas == 0) {
+        printf("[AVISO] Nenhuma turma cadastrada.\n");
+        return;
+    }
+
+    printf("%-10s %-40s %-8s\n", "Código", "Nome do Curso", "Limite");
     printf("----------------------------------------------------------------\n");
     
-    for (int i = 0; i < total_alunos; i++) {
-        printf("%-10d %-30s %-8s %-5d\n", 
-            biblioteca[i].matricula, 
-            biblioteca[i].nome, 
-            biblioteca[i].turma, 
-            biblioteca[i].livro_emprestado
+    for (int i = 0; i < total_turmas; i++) {
+        printf("%-10s %-40s %-8d\n", 
+            cadastro_turmas[i].codigo, 
+            cadastro_turmas[i].nome_curso, 
+            cadastro_turmas[i].limite_alunos
         );
     }
     printf("----------------------------------------------------------------\n");
 }
 
-void inserirAluno() {
-    int nova_matricula;
-    char novo_nome[50];
+void inserirLivro() {
+    int novo_id;
     
-    printf("\n--- INSERÇÃO DE NOVO ALUNO ---\n");
+    printf("\n--- CADASTRO DE NOVO LIVRO ---\n");
 
-    if (total_alunos >= max_alunos) {
-        printf("[AVISO] O limite de alunos (%d) foi atingido. Nao foi possivel incluir mais alunos.\n", max_alunos);
+    if (total_livros >= max_livros) {
+        printf("[AVISO] O limite de livros cadastrados (%d) foi atingido.\n", max_livros);
         return;
     }
-  
-    printf("Digite a matricula do aluno: ");
-    if (scanf("%d", &nova_matricula) != 1) {
-        printf("[ERRO] Entrada de matricula invalida.\n");
-        while (getchar() != '\n');
+
+    printf("Digite o ID do Livro: ");
+    if (scanf("%d", &novo_id) != 1) {
+        printf("[ERRO] Entrada de ID invalida.\n");
+        while (getchar() != '\n'); 
         return;
     }
     while (getchar() != '\n');
-
-    if (buscarPosicao(nova_matricula) != -1) {
-        printf("[AVISO] A matricula %d ja existe. Processo cancelado.\n", nova_matricula);
+    
+    if (buscarPosicaoLivro(novo_id) != -1) {
+        printf("[AVISO] O Livro com ID %d ja existe. Processo cancelado.\n", novo_id);
         return;
     }
-  
+    
+    int i = total_livros;
+    while (i > 0 && catalogo_livros[i - 1].id > novo_id) {
+        catalogo_livros[i] = catalogo_livros[i - 1]; 
+        i--;
+    }
+    
+    catalogo_livros[i].id = novo_id;
+    
+    printf("Digite o titulo do livro: ");
+    fgets(catalogo_livros[i].titulo, 60, stdin);
+    if (catalogo_livros[i].titulo[strlen(catalogo_livros[i].titulo) - 1] == '\n') {
+        catalogo_livros[i].titulo[strlen(catalogo_livros[i].titulo) - 1] = '\0';
+    }
+    
+    printf("Digite o autor do livro: ");
+    scanf("%s", catalogo_livros[i].autor);
+    while (getchar() != '\n');
+
+    printf("Digite a quantidade de livros em estoque: ");
+    if (scanf("%d", &catalogo_livros[i].qtd_estoque) != 1) {
+         printf("[ERRO] Entrada de quantidade invalida.\n");
+         while (getchar() != '\n'); 
+         return;
+    }
+    while (getchar() != '\n');
+    
+    total_livros++;
+    printf("\n[SUCESSO] Livro '%s' (ID: %d) cadastrado com %d copias.\n", catalogo_livros[i].titulo, novo_id, catalogo_livros[i].qtd_estoque);
+}
+
+void apresentaLivros() {
+    printf("\n--- CATÁLOGO DE LIVROS CADASTRADOS (%d) ---\n", total_livros);
+
+    if (total_livros == 0) {
+        printf("[AVISO] Nenhum livro cadastrado.\n");
+        return;
+    }
+
+    // CABEÇALHO
+    printf("%-5s %-40s %-25s %-5s\n", "ID", "Título", "Autor", "Estoque");
+    printf("--------------------------------------------------------------------------------\n");
+    
+    for (int i = 0; i < total_livros; i++) {
+        printf("%-5d %-40s %-25s %-5d\n", 
+            catalogo_livros[i].id, 
+            catalogo_livros[i].titulo, 
+            catalogo_livros[i].autor,
+            catalogo_livros[i].qtd_estoque
+        );
+    }
+    printf("--------------------------------------------------------------------------------\n");
+}
+
+void inserirAluno() {
+    int nova_matricula;
+    char novo_nome[50];
+    char codigo_turma_aluno[10];
+    
+    printf("\n--- CADASTRO DE NOVO ALUNO ---\n");
+
+    if (total_alunos >= max_alunos) {
+        printf("[AVISO] O limite de alunos cadastrados (%d) foi atingido. Processo cancelado.\n", max_alunos);
+        return;
+    }
+    
+    printf("Digite a matricula do aluno: ");
+    if (scanf("%d", &nova_matricula) != 1) { /* ... */ while (getchar() != '\n'); return; }
+    while (getchar() != '\n'); 
+    if (buscarPosicaoAluno(nova_matricula) != -1) { printf("[AVISO] A matricula %d ja existe. Processo cancelado.\n", nova_matricula); return; }
+
     printf("Digite o nome do aluno: ");
-    if (fgets(novo_nome, 50, stdin) == NULL) return;
-    if (novo_nome[strlen(novo_nome) - 1] == '\n') {
-        novo_nome[strlen(novo_nome) - 1] = '\0';
-    }
+    if (fgets(novo_nome, 50, stdin) == NULL) { /* ... */ return; }
+    if (novo_nome[strlen(novo_nome) - 1] == '\n') { novo_nome[strlen(novo_nome) - 1] = '\0'; }
+    if (buscarPorNome(novo_nome) != -1) { printf("[AVISO] Este aluno (Nome: %s) ja foi cadastrado. Processo cancelado.\n", novo_nome); return; }
 
-    if (buscarPorNome(novo_nome) != -1) {
-        printf("[AVISO] Este aluno (Nome: %s) ja foi cadastrado. Processo cancelado.\n", novo_nome);
+    printf("Digite o codigo da turma (ex: SI01): ");
+    scanf("%s", codigo_turma_aluno);
+    while (getchar() != '\n');
+
+    int pos_turma = buscarPosicaoTurma(codigo_turma_aluno);
+    if (pos_turma == -1) {
+        printf("[ERRO] Turma '%s' nao cadastrada no sistema. Cadastre a turma primeiro.\n", codigo_turma_aluno);
         return;
     }
-  
+    
     int i = total_alunos;
     while (i > 0 && biblioteca[i - 1].matricula > nova_matricula) {
         biblioteca[i] = biblioteca[i - 1]; 
         i--;
     }
-  
+
     biblioteca[i].matricula = nova_matricula;
     strcpy(biblioteca[i].nome, novo_nome);
-    
-    printf("Digite a turma do aluno: ");
-    scanf("%s", biblioteca[i].turma);
-    while (getchar() != '\n'); 
-
-    biblioteca[i].livro_emprestado = 0; 
+    strcpy(biblioteca[i].codigo_turma, codigo_turma_aluno);
+    biblioteca[i].id_livro_emprestado = 0;
 
     total_alunos++;
-    printf("\n[SUCESSO] Aluno %s (Matricula: %d) inserido.\n", novo_nome, nova_matricula);
+    printf("\n[SUCESSO] Aluno %s inserido na turma %s.\n", novo_nome, codigo_turma_aluno);
 }
 
-void removerAluno() {
-    int matricula_remover;
-    printf("\n--- REMOÇÃO DE ALUNO ---\n");
-    
-    if (total_alunos == 0) {
-        printf("[AVISO] Nao ha alunos para remover.\n");
-        return;
-    }
-    
-    printf("Digite a matricula do aluno a ser removido: ");
-    if (scanf("%d", &matricula_remover) != 1) {
-        printf("[ERRO] Entrada de matricula invalida.\n");
-        while (getchar() != '\n');
-        return;
-    }
-    while (getchar() != '\n');
-    
-    int pos = buscarPosicao(matricula_remover);
-    
-    if (pos == -1) {
-        printf("[AVISO] Aluno com matricula %d não encontrado.\n", matricula_remover);
-        return;
-    }
 
-    if (biblioteca[pos].livro_emprestado != 0) {
-        printf("[AVISO] O aluno %s tinha o livro %d emprestado. Ele foi removido.\n", 
-               biblioteca[pos].nome, biblioteca[pos].livro_emprestado);
-    }
-    
-    for (int i = pos; i < total_alunos - 1; i++) {
-        biblioteca[i] = biblioteca[i + 1];
-    }
-    
-    total_alunos--;
-    printf("\n[SUCESSO] Aluno com matricula %d removido com sucesso.\n", matricula_remover);
-    
-    if (total_alunos == 0) {
-        printf("[AVISO] Todos os alunos foram removidos (lista vazia).\n");
-    }
-}
 
-void alterarAluno() {
-    int matricula_alterar;
-    int pos;
-    int novo_livro;
-    char resposta;
-
-    printf("\n--- ALTERAÇÃO DE DADOS DO ALUNO ---\n");
-
-    if (total_alunos == 0) {
-        printf("[AVISO] Nao ha alunos para alterar.\n");
-        return;
-    }
-
-    printf("Digite a matricula do aluno a ser alterado: ");
-    if (scanf("%d", &matricula_alterar) != 1) {
-        printf("[ERRO] Entrada de matricula invalida.\n");
-        while (getchar() != '\n');
-        return;
-    }
-    while (getchar() != '\n');
-
-    pos = buscarPosicao(matricula_alterar);
-
-    if (pos == -1) {
-        printf("[AVISO] Aluno com matricula %d não encontrado. Processo cancelado.\n", matricula_alterar);
-        return;
-    }
-    
-    printf("\nAluno encontrado: %s - Livro atual: %d\n", 
-        biblioteca[pos].nome, 
-        biblioteca[pos].livro_emprestado
-    );
-
-    printf("Deseja alterar a turma (atual: %s)? (S/N): ", biblioteca[pos].turma);
-    scanf(" %c", &resposta);
-    while (getchar() != '\n');
-
-    if (resposta == 'S' || resposta == 's') {
-        printf("Digite a nova turma: ");
-        scanf("%s", biblioteca[pos].turma);
-        while (getchar() != '\n');
-        printf("[SUCESSO] Turma alterada para: %s\n", biblioteca[pos].turma);
-    }
-  
-    printf("Deseja alterar o livro emprestado (atual: %d)? (S/N): ", biblioteca[pos].livro_emprestado);
-    scanf(" %c", &resposta);
-    while (getchar() != '\n'); 
-    
-    if (resposta == 'S' || resposta == 's') {
-        printf("Digite o ID do novo livro (0 para devolver/nenhum): ");
-        if (scanf("%d", &novo_livro) != 1) {
-            printf("[ERRO] Entrada de livro invalida.\n");
-            while (getchar() != '\n');
-            return;
-        }
-        while (getchar() != '\n');
-
-        if (novo_livro != 0 && biblioteca[pos].livro_emprestado != 0 && novo_livro != biblioteca[pos].livro_emprestado) {
-            printf("[AVISO] O aluno ja possui um livro. Limite de %d livro(s) por aluno.\n", max_livros_por_aluno);
-        } else {
-            biblioteca[pos].livro_emprestado = novo_livro;
-            printf("[SUCESSO] Emprestimo/Devolucao atualizado.\n");
-        }
-    }
-
-    printf("\n[SUCESSO] Alteracoes no Aluno %d concluidas.\n", matricula_alterar);
-}
-
-void cadastroSimples(const char *tipo) {
-    printf("\n--- CADASTRO DE %s (Simples) ---\n", tipo);
-    printf("Funcionalidade completa de cadastro de %s nao implementada.\n", tipo);
-    printf("Pressione ENTER para retornar ao menu.\n");
-    getchar(); 
-}
 
