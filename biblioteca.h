@@ -6,40 +6,54 @@
 #include <string.h>
 
 #define max_alunos 100 
-#define max_turmas 20
-#define max_livros 500
-#define max_livros_por_aluno 1 
+#define max_turmas 20  
+#define max_livros 500 
+#define max_livros_por_aluno 1
 
 typedef struct {
     int matricula;
     char nome[50];
-    char codigo_turma[10];
+    char codigo_turma[10];      
     int id_livro_emprestado;
 } Aluno;
 
 typedef struct {
-    char codigo[10];
+    char codigo[10];            
     char nome_curso[40];
-    int limite_alunos;
+    int limite_alunos;          
 } Turma;
 
 typedef struct {
-    int id;
+    int id;                     
     char titulo[60];
     char autor[50];
-    int qtd_estoque;
+    int qtd_estoque;            
 } Livro;
 
 void inicializarDados();
+void lerString(char *destino, int tamanho);
+
+int buscarPosicaoAluno(int matricula_busca);
+int buscarPorNome(const char *nome_busca);
+int buscarPosicaoTurma(const char *codigo_busca);
+int buscarPosicaoLivro(int id_busca);
 
 void apresentaAlunos();
 void inserirAluno();
 void removerAluno();
 void alterarAluno();
-int buscarPosicaoAluno(int matricula_busca);
 
-void inserirLivro();
+void apresentaTurmas();
+void inserirTurma();
+void removerTurma();
+void alterarTurma();
+
 void apresentaLivros();
-int buscarPosicaoLivro(int id_busca);
+void inserirLivro();
+void removerLivro();
+void alterarLivro();
+
+void realizarEmprestimo();
+void realizarDevolucao();
 
 #endif
